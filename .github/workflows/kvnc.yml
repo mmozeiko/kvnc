@@ -1,0 +1,44 @@
+name: kvnc
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: repo
+
+      - name: Build
+        shell: cmd
+        run: cd repo && build.cmd
+
+      - name: Checkout wiki
+        uses: actions/checkout@v3
+        if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+        with:
+          repository: ${{github.repository}}.wiki
+          path: wiki
+
+      - name: Upload binary
+        if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+        shell: cmd
+        run: |
+          cd repo
+          "C:\Program Files\7-Zip\7z.exe" a -tzip -mx=9 kvnc.zip kvnc.exe
+          cd ..
+
+          copy repo\kvnc.zip wiki
+
+          cd wiki
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit --all --amend --no-edit
+          git push --force-with-lease
