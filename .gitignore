@@ -1,0 +1,10 @@
+.vs
+x64
+*.ini
+*.exe
+*.obj
+*.pdb
+*.lib
+*.exp
+*.sln
+*.vcxproj*
